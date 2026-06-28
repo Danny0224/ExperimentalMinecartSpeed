@@ -1,0 +1,16 @@
+name: ExperimentalMinecartSpeed
+version: ${version}
+main: com.danny29404711.minecartspeed.ExperimentalMinecartSpeedPlugin
+api-version: '26.1.2'
+author: Danny0224
+description: Uses Minecraft/Paper 26.1.2 experimental NewMinecartBehavior, overrides minecart max speed, and adds optional direct Geyser Bedrock minecart bridge.
+softdepend:
+  - Geyser-Spigot
+commands:
+  mcspeed:
+    description: Adjust minecart max speed based on vanilla experimental minecart behavior.
+    usage: /mcspeed <info|set|reload|resync>
+    permission: mcspeed.admin
+permissions:
+  mcspeed.admin:
+    default: op

@@ -1,0 +1,96 @@
+# Vanilla Minecart Improvements experiment adds the minecartMaxSpeed gamerule.
+# This plugin emulates that idea by replacing each minecart's behavior with the
+# vanilla/Paper 26.1.2 NewMinecartBehavior and overriding only getMaxSpeed().
+# Unit: blocks per second. Vanilla default is 8.0. Experimental gamerule allows up to 1000.
+max-speed-blocks-per-second: 16.0
+
+# When true, only minecarts with at least one Player passenger use the fast speed above.
+# Empty normal carts fall back to normal-speed-blocks-per-second.
+speed-only-when-player-riding: true
+
+# IMPORTANT for redstone machines and item sorters:
+# When true, the plugin only replaces the movement behavior of the normal rideable minecart entity type.
+# Hopper/chest/furnace/TNT/command/spawner minecarts stay completely vanilla.
+# Keep this true if you use hopper minecarts for item sorting, farms, unloaders, or redstone timing systems.
+inject-only-rideable-minecarts: true
+
+# IMPORTANT for mob farms and redstone contraptions:
+# When true, even normal rideable minecarts are NOT modified unless a real Player is riding them.
+# Empty normal minecarts and minecarts carrying mobs/animals/villagers stay completely vanilla.
+# Keep this true if your farms use minecarts to transport mobs.
+control-only-player-ridden-minecarts: true
+
+# Normal speed for carts without a player passenger. Vanilla default is 8.0 blocks/s.
+normal-speed-blocks-per-second: 8.0
+
+# When a player exits, clamp the cart's leftover velocity back to normal speed so it does not keep flying away at high speed.
+clamp-empty-cart-velocity-on-exit: true
+
+# Inject minecarts already loaded when the plugin starts.
+inject-existing-minecarts-on-startup: true
+
+# Safety net: scan loaded minecarts periodically in case another plugin or load path creates old behavior carts.
+scan-interval-ticks: 100
+
+# Also check every VehicleUpdateEvent. This is cheap because already-injected carts return immediately.
+inject-on-vehicle-update: true
+
+# Print how many carts were injected during startup and periodic scans.
+log-injection-counts: true
+
+
+# Server-only fallback visual sync.
+# Keep this true if the server uses NewMinecartBehavior by plugin injection but the client sees frozen carts.
+# It sends normal vanilla relative movement packets every tick, avoiding choppy periodic teleporting.
+# This applies to every injected minecart, not only fast/player-ridden carts, because the client
+# sync mismatch is caused by the server-side NewMinecartBehavior itself.
+force-legacy-client-smooth-sync: true
+
+# Players within this distance receive the extra visual sync packets.
+visual-sync-tracking-range-blocks: 128.0
+
+# Experimental compatibility layer for Geyser/Bedrock players.
+# Java players already receive normal visual sync. Bedrock clients can still locally predict ridden minecarts
+# with their own original-speed behavior. This layer forces Geyser's internal experimental minecart state
+# and directly updates Geyser's Bedrock entity positions. This requires Geyser-Spigot in the same JVM.
+bedrock-support:
+  enabled: true
+
+  # Uses GeyserApi.api().isBedrockPlayer(UUID) when Geyser-Spigot is installed.
+  detect-geyser-players: true
+
+  # Force GeyserSession#setUsingExperimentalMinecartLogic(true) for Bedrock players near injected minecarts.
+  # This makes Geyser treat Java's experimental minecart packets as intentional.
+  force-geyser-experimental-minecart-mode: true
+
+  # While a Bedrock player is riding a plugin-controlled minecart, try to disable Geyser's client-predicted
+  # vehicle mode every tick. This prevents Bedrock from pulling the visible minecart back to vanilla speed.
+  disable-client-vehicle-prediction-while-riding: true
+
+  # Directly move the Bedrock-side Geyser entity every tick via Geyser's internal entity move path.
+  # This is the actual solution-B bridge.
+  # Important: when this is true, the plugin will NOT also send Java relative move packets to Bedrock viewers,
+  # because two movement authorities slowly desync and cause curve offset after the server has been running.
+  send-direct-bedrock-move-packets: true
+
+  # 1 = every tick. Keep 1 to avoid choppy or delayed minecart movement.
+  direct-move-interval-ticks: 1
+
+  # Java ClientboundSetEntityMotionPacket fallback.
+  # Keep this false when direct Bedrock movement is enabled; otherwise Bedrock can receive both Java-translated
+  # motion and direct absolute movement, which may look correct at startup but drift on curves over time.
+  send-extra-motion-packets: false
+
+  # 1 = every tick. Increase to 2 or 3 only if packet volume becomes a problem.
+  motion-sync-interval-ticks: 1
+
+  # Re-send the minecart passenger list occasionally for Bedrock riders.
+  # This is a safety net for vehicle/rider desync. 0 disables it.
+  resend-passengers-interval-ticks: 20
+
+  # If true and a Bedrock player is riding the minecart, the plugin returns the normal vanilla speed
+  # instead of the high speed. Keep false while testing solution B.
+  fallback-original-speed-for-bedrock-riders: false
+
+  # Print Geyser detection/debug messages.
+  debug-log: false
