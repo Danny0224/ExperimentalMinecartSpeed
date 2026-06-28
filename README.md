@@ -1,4 +1,4 @@
-# ExperimentalMinecartSpeed 26.1.2 - Geyser Reconnect Fix
+# ExperimentalMinecartSpeed 26.1.2
 
 This build keeps Java Edition visual sync working, but changes the Bedrock/Geyser path to avoid two competing movement authorities.
 
